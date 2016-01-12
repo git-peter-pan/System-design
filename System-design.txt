@@ -186,5 +186,131 @@ cond_wait(cond, mutex)
  see the ppt
 
  INTERVIEW: DESIGN THE FASTEST consumer and producer
- disruptor
- 
+ disruptor(bonus);
+
+ interview: find the duplicate 
+ find the longest sentence in two pages and compare
+ what if minor different
+ find the longest substring.
+
+ INTERVIEW : ADVAN conditional variable  vs. sleep
+ latency sleep(1s);
+ thread wake up and sleep frequently.
+
+ exPOnential latency
+ sleep 10ms, 100ms, 1s
+
+ INTERVIEW: DISTRIBUTE CRAWLERS IN MULTIPLE MACHINES( distributed crawlers);
+ diagram:ppt
+ INTERVIEW: DRAWBACK
+ TOO MANY CONNECTORS
+ SENDER AND RECEIVER
+ INTERVIEW: IS THAT GOOD?
+ CONNECTION BECOME MORE. BUT NOT THE PROBLEM.
+ CAN USE LESS MODULE, REUSE THE CONNECTOR. SIMPLER ARCHITECTURE.
+ need 2 semaphone
+ SOLUTION WITH DATABASE
+
+ tiny url: start from twitter, only can tweet 140 characters
+ design in microcosmic doesn't need to strictly obey the SNAKE
+
+ API: 
+ long to short 
+ short to long
+ statistics
+
+ ALG:
+  long to short
+  data structure:90% use hash(wrong, not neccesary)
+
+  brute force: count++ every time, jz.com/$count
+  become too long after one year
+
+  necessary
+  daily active users
+  1m
+  insert:
+  perday 1m *1%(function usage)*10(function frequency)=100k
+  per year 100k * 265 = 36.5m;
+  persecond 100k/86400 = 1.2 < 100qps, one machine can handle
+  lookup
+  per day: 1m * 100%(function usage) * 3(function frequency) = 3m;
+  per second 3m/86400 = 35; peak = 35* 2 * 5 
+
+  algorithm:
+  2 maps/ 2 tables
+  long to short 
+  short to long
+
+  generateShorURL()
+  	return String(mLongToShort.size());
+
+  may conflict
+
+  INTERVIEW : how to reduce the size of map
+  Yearly URL 36.5m
+  usable characters[0-9] = 10;
+  encoding length = log10(36.5m) = 7.6 = 8;
+  example goo.gl/36500000
+
+
+  improve
+  usable characters
+  [0-9a-zA-Z]: easy to type
+  log62(36.5m) = 4.2
+  example: goo.gl/2t9jG
+
+  String ConvertTo62(int number) 
+  	char Encode[62] = {'0',....,'9','a',...,'z','A',...,'Z'};
+  	String res = "";
+  	while(number)
+  		res = Encode[number%62] + res;
+  		number /= 62;
+  	return res;
+
+ Kilobit
+ average size of longURL = 100bytes
+ average size of shortURL = 4bytes(int)
+ state = 4 byte(expired , not availabe)
+ daily new URL = 100k * 100 = 10.8mb
+ yearly new URL = 10.8MB*365 = 4GB < 1TB can handle by memory
+ database: mysql or NoSQL
+
+ INTERVIEW : URL POLLUTION(BAD POLLUTION)
+ input same ip more than 5 times, need to identify security code
+
+ FOLLOW UP
+ HOW TO SUPPORT RANDOM
+ random(0, range);
+ How to avoid conflicting 
+ try again, low probability
+
+ How to implement time-limited service?
+ exipire/state
+ how to cache
+ pre-load & wait limit
+ replacement
+
+ HOW TO SUPPORT ANALYSIS
+ A LOG:
+ date:
+ time:
+ referer
+ ip
+ country
+ to
+ browser
+ platform
+
+ bucket 
+ last two hour buckets
+ last day buckets
+ last week bukcets: doesn't need to store data, because is caculated in last month
+ last month buckets
+ all time buckets
+
+ use log to update all the bucket table
+o(4)
+ web crawler: less in 1 min;
+
+  	
