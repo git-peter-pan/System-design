@@ -49,3 +49,142 @@ SNAKE:
 	application
 	kilobit
 	Evolve
+
+
+
+
+WEB CRAWLER && TINY URL
+design crawler
+design thread-safe consumer and producer(Amazon) CAN PRACTISE URSELF
+design a tinyurl CAN PRACTISE URSELF
+
+interview : let's implement on singers
+
+based on data: web pages--information collection --database -- information retrieval--(rank, search, recommend)
+rank, search and recommand can combine into rank
+if rank and recommand use different datasets, rank based on clicks, recommand based on social graph, you'd better
+seperate them.
+
+crawl:(python)
+url = 'http://xxx/xxx/xxx.shtml'; 
+request = urllib2.Request(url); //write a letter
+response = urllib2.urlopen(request); //send the letter and get the reply
+page = response.read(); // read the reply
+//save the source file
+webFile = open('webPage.html', 'wb')
+webFile.write(page); 
+
+interview: what is the process druing crawler
+
+crawler: socket() -- > connect() -- > read() write() -- > close()
+web server: socket() ->bind() -- >listen() -> accept() -> read /write()
+similar like call center
+http connection
+syn - syn-ack - ack 1st
+
+http application layer
+socket abstract layer for under layers
+TCP /UDP transportation layer
+IP network layer
+Hardware interface link layer
+
+What is HTML
+html uses a tree to represent a page
+svg: scalable vector graphics(SVG)
+
+INTERVIEW:crawl all the news of a website:
+crawl all the news page
+identify the list page
+http://yue.ifen.com/news/list_0/0.shtml
+list_0 .... can increase maybe
+0.shtml can increase maybe 
+regex:
+
+ans:
+import re;
+ pattern = re.compile("<a href="http://yue.ifeng.com/news/detail_(.*?)"target="_blank">(.*?)</a>', re.S);
+.: any character
+*: zero or more 
+?: zero or one
+items = re.findall(patter, page);
+
+architecture(v1)
+List crawler -> links of news -> news crawler -> pages of news
+
+Interview: crawl more page
+architecture(v2)
+ifen.com-                         - many ifeng.com(new crawler)
+sina.com-scheduler(links of news) - many sina.com -- page of news
+163.com-                          - many 163.com
+Interview: drawback of this architecture
+news cralwer can be used repeatly.
+
+architecture:
+many crawler 
+scheduler(two strategy: list, news)
+task table: task id, priority(list > url), type(page_ifen, list_163), state(done, working, new), link, 
+available time(), endTime
+
+INTERVIEWER: design a scheduler? producer and consumer model
+Solution with sleep
+while(true)
+	lock(tasktable);
+	while tasktable.find("stat == new") == null
+		release(tasktable);
+		sleep(1s);
+	end while
+	lock(tasktable);
+	task = tasktable.findone("state == new");
+	task.state = "working";
+	release(tasktable);
+
+	page=crawl(task.url);
+
+	if task.type == list;
+		lock(tasktable);
+		for newtask in page
+		 	tasktable.add(newTask);
+		 	task.state = "done";
+		 release(tasktable);
+	else
+		lock(tasktable);
+		pageTable.add(page);
+		release(tasktable);
+end while
+INTERVIEW: SOMETHING WRONG WITH THE CODE
+state in else wasn't set up
+lock(tasktable);
+task.state = "done";
+release(tasktable);
+
+INTERVIWER: DESIGN SCHEDULER WITH CONDITIONAL VARIABLE(ask frequently)
+modify:
+while( tasktable.find(state == new))
+	cond_wait.add(cond, tasktable)
+	...
+tasktable.add(newtask);
+con_signal(cond);// after crawler is empty
+
+conditional variable
+cond_wait(cond, mutex)
+ lock(cond.threadWaitList);
+ cond.threadWaitList.add(this.thread);
+ release(cond.threaWaitList);
+
+ relaese(mutex);
+ block(this.thread);
+ lock(mutex);
+
+ cond_signal(cond)
+ 	lock(cond.threadWaitList);
+ 	if(cond.threadWaitlist.size() > 0) 
+ 		thread = cond.threadwaitlist.pop();
+ 		wakeup(thread);
+ 	relaese(cond.threadwaitlist);
+
+ Interview: implement with semaphone
+ see the ppt
+
+ INTERVIEW: DESIGN THE FASTEST consumer and producer
+ disruptor
+ 
