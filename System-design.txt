@@ -1,0 +1,51 @@
+Scenario: case/interface
+Necessary: constrain/hypothesis
+step1:ask daily active users
+step2:predict 
+user
+	daily_active_users
+	average conccurent users = daily_active_users/daily_senconds*average_online_time
+这个指标不对，系统能力取决于高峰时间能力
+	peak_users = average conccurent users  * 6
+//要预测未来，可能三个月以后上市，
+max_peak_users in 3 months = peak_users*2 
+
+估算流量：
+Traffic
+	traffic per user = 3 mbps(video)
+	max_peak_traffic = max_peak_users*traffic_per_second = 1,250,000*3mbps=3.75 Tb/s(>30% of US traffic)
+
+Memory
+	memory_per_user = 10kb
+	Max_daily_memory = 5,000,000*2*10(3 months later) = 100GB
+
+Storage
+	total movie = 14,000(movies)
+	movie_storage = total_movie*average_movie_size = 14,000*50G(different resolution)= 700 TB
+
+Application:service/algorithm
+	模块设计
+
+kilobit:data
+
+	user service: mysql,
+	channel service:mongoDB
+	movie: file
+Evolve: 
+	step1: analyze
+		with
+			better:constrains
+			broder:new cases
+			deeper:details
+		from the views of
+			performance
+			scalability
+			robustness
+	step2: goback by evolving accordingly
+
+SNAKE:
+	scenario
+	neccessary
+	application
+	kilobit
+	Evolve
