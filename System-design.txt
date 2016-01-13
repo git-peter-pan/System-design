@@ -589,6 +589,294 @@ How to support limiter on users?
 How to support query with different quotas?
 quota??
 
+INTERVIEW: design seckill
+qps=1m;
+
+1.network, (connect , bandwidth)
+ndx?ngx? 10w
+static page
+2.webservice,  
+3.data.
+\\\
+
+
+Distribute system
+Design distributed file system(GFS) and database(BigTable)?(google, yelp)
+calculate word appearance/inverted index/anagrams with MapReduce
+
+Three Musketeers of Google
+MapReduce, BigTable, GFS
+
+google 
+What is the layer of search engine?
+
+data stream
+10^12-15 pages
+save them(how to save, how to read and write);
+PageRank
+Application 1, 2, 3
+algorithm(MapReduce) ( some part connect direct to file(GFS))
+Data model(BigTable)
+File(GFS)
+
+How to save a file?
+
+disk structure, see ppt p11
+in linux, everything is a file
+in basic system, write and read in continous space, faster
+
+How to save a large file
+cannot index(index is very large);
+
+sol: chunks(64MB)
+drawback, if the file is small, waste space
+
+file is larger then hard drive.
+advantage: reduce the size of metadata.
+reduce the traffic
+
+Interview: how to save a extra large file
+one master + many chunkServers
+
+disadvantage:
+Any change of the diskoffset a chunk in a chunkserver need to notify the master
+
+How to reduce the traffic
+the master don't recort the diskoffset of a chunk,
+just store which chunkserver
+chunserver itself store the diskoffset
+
+Advantage: 
+reduce the sie of the metadata in master 
+reduce the traffic between master and chunkserver
+
+How to identify whether a chunk on the disk is broken?
+key point 
+1 chunk = a list of blocks
+1 block = 64 kb
+each block has a checksum
+1 checksum = 32bit
+the size of checksum of 1T file
+1T/64KB*32bit = 64MB
+
+It will compare its checksum when it reads a block to check correct or not
+
+系统要为错误而设计
+
+how to avoid the loos of data when a chunkserve is down/fail?
+Key point 
+replicate the chunks and put the in 3 chunkservers.
+
+how to decide the checksum bits
+how many replications : 3
+how to select chunkservers of a chunk?
+ server with below-average disk space utilization
+ limited number of "recent" creation
+ across racks 2+1 (2 in CA datacenter) (1 in WA datacenter)
+
+ How to recover when a chunk is broken?
+ ask master 
+ some details:
+ 1.send message to master that a chunk is broken
+ 2.chunk delete the broken chunk and 
+ 3.get reply from master, know where is the other chunks
+ 4.visite the closest on server to ask the chun
+ 5. get chunk back
+ 6. notice master have recover the chunk
+ 7.chunk add that server back to index
+
+How to find whether a chunkserver is down?
+
+send message to master periodly.
+1 min(ofen) or 10min
+chunk server send heartbeat
+master waits until 5min and know that missing heartbeat is broken
+
+How to recover data when a chunkserver is down?
+key point:
+repair priority is based on the number of replications
+what if they are the same
+earlier , higher priority 
+
+How to avoid hot spot?
+hot spot: frequently visited in a short time
+
+chunck stats
+chunk00, access frequency = 100;
+server stats
+chunkserver01, free space = 21%, free bandwidth = 15%;
+replicate a chunk into more replications when it is busy
+fill the chunkserver with more space and more bandwidth
+will delete these chun after the hot period is gone
+How to read from file??
+
+
+Master load is too much?
+
+How to write into a file?
+Application(GFS client) < -- > GFS master
+client tells the master that : where is (chunk, 2ef0);
+master replay that the primary is CS3, the replica are CS0 and CS5.
+client dont need to know too much about the lower layer
+master needs to be simple as much as possible
+so find one of 3 chunkservers to write the file
+
+3.1 cache (2ef0);
+send to closest chunk server
+to chunkserver 0;
+3.2 cache()
+ send to chunkserver 3
+ 3.3 cache(2ef0);
+ need ack indicates that those data has been store in memory
+ then application start to find primary chunkserver, and ask him to 
+ write these data into hard driver.
+ primary tells others to wirte into hard driver
+ get 2 acks
+ send ack back to client.
+
+ WHAT IF primary is down when cache ?
+ dont handle that , let client himself to handle, choose to retry or not.
+
+ cache 完之后还不能访问数据
+ 3 chunks write are successful then notice client succeed, else failed
+
+
+
+BigTable
+How to support lookup and range query on a file?
+table = A list of sorted<key, value>
+
+How to save a large table
+metadata of table
+Tablet0, lastKeyOfTablet0, address0
+Tablet1, lastKeyOfTablet1, address1
+Tablet2, lastKeyOfTablet2, address2
+
+Tablet0
+...
+a, sangpo
+c, flyer
+ 
+ a table = a list of tablets
+ tablet = a list of sorted <key, value>
+
+ How to save an extra-large table?
+ morelevels, 3 levels
+
+ How to write into a table?
+ memTable: memory table, pointer
+ memTable: insert into memtable first, make sure the speed.
+ A tablet = memTable + a list of SSTables(64M);
+
+ What if memTable is too large?(full)
+ if full, create a new SSTable, dump the data to that SSTable.
+
+ How to avoid system failure.
+ a tablet = memTable + a list of SSTables + log
+
+ inside a sstable, it's sorted
+ what about among sstables? may be not sorted.
+
+ How to read data?
+a read need to ask all sstables and memtable
+each sstable needs to use Disk search to find the element.
+
+How to read data fast??
+a sstable = a list of sorted <key, value> = a list of 64k blocks + index
+indices are pre-loaded into memory
+read fast by 
+	use indices by identify the place in disk
+
+READ FASTER????
+bloomfilter
+
+a sstable = a list of sorted <key, value> = a list of 64k blocks + index
++bloomfilter
+
+How to build bloom filter
+foo two hash value
+set them as 1
+
+How to save a table into GFS?
+
+
+What is the logical view of table?
+3d table, time line
+whey they need time line, crawler different version(time) of webpage
+
+GFS LIKE linux OS
+bigtable like MYSQL
+
+INTERVIEWER: how to transform logic into physical
+key = string(row, column, time);
+
+bigtable architecture
+bigtables are in the memory, dont need hard driver. 
+tablets are in the memory.
+
+MapReduce
+for 1TB <key, value> data, how to compute 
+ 	appearances of words
+ 	inverted index
+ 	anagrams
+
+ What is map and reduce?
+ map: disasssemble
+ reduce: reassemble
+
+ input -> split -> map -> shuffle -> reduce -> finalize
+
+ Interviwer: calculate word's number of appearance.
+
+  Map(string key, string value)
+  //key: the id of a line
+  //value: the content of the line
+  for each word in value
+  	outputTemp(word,1);
+
+  reduce(String key, list valueList)
+  //key: the name of a word
+  //valueList: the appearances of this word. 
+  int sum = 0;
+  for value in value list,
+  sum += value; 
+
+  OutputFinal(key, sum);
+
+ Interview: Build inverted index
+ calculate anagrams with mapreduce
+
+ What is architecture of MapReduce
+ differnt master
+
+ only local write and 6.write are in the hard drive
+ LOCAL write will be clear after finishing the task
+ fork: create workers
+
+ big data anaysis
+ hash, bit map, tire, b tree
+
+ Interviewer: find top-100 ips in 1T logs of (id, timestamp, IP);
+
+
+ 工作中： disassemble and reassemble
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
