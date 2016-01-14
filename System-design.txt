@@ -863,6 +863,297 @@ for 1TB <key, value> data, how to compute
 
 
 
+NEWS FEED
+
+PUSH MODEL:
+Interviewer: HOW to write a tweet?
+write api-fanout O(n, social graph)
+(wechat, twitter, facebook,)
+RESTful API
+
+read a timeline with push
+timeline lists -- timeline service O(1) 
+
+INTERVIEW : how to deal with storm of lady gaga.
+
+lady gag: 49.7m: notify 49.7m user? 
+solution 1: only nofity online users.
+
+
+
+PULL model
+how to write a tweet?
+write api O(1);
+
+How to read 
+timeline service read social graph, and get the tweets
+O(n);
+
+problem: readers are more than writer.
+
+Interview: how to deal with the architect of the MATRIX?
+IF SOMEON FOLLOWS 1B.
+get first set of rows in the newest news?
+
+Push & Pull Model
+if followers < 100k, fanout
+else write it into feed list
+
+What if follower jitter on 100k
+sol: overlap the range
+followers < 100k fanout(push)
+follower > 90k feedlist(pull);
+
+Interviewer: hot to choose between push and pull?
+understand you specifc scenario
+balance between latency, computation & storage.
+O(n) is not workable.
+Real time with terrible QPS need pull
+
+apache, nginx ( http server )
+
+simplicity asks for focusing on one.
+l1 cache l2 cache??
+
+
+facebook pull
+instagram push
+
+pholosyph: 一条路走通即可，不需要太摇摆，结合太多往往会结合他们所有的优缺点，带来更多的问题
+
+interviewer: how to speed up?
+memory: faster >10^2 times than disk
+
+assumption: 1 billion users
+average feed size: 50 tweets.
+average timeline size 1000 tweets.
+tweet size: 200b (unicode, acsii wiki them!)
+average follower 30;
+
+memory needed 
+size of timeline lists = 1b*10k*200 = 200T
+size of feedlist = 1b*50*200b = 10T
+size of social graph = 1b *30 *2 *8 = 480G
+
+How to save space?
+cache active user list
+
+only cache for the users who is active within 1 week
+only cache the latest 800 tweets.
+
+assumption:
+weekly a users
+100m
+average feed size = 80
+average time line 500
+tweet size = 200b
+average followers = 20
+
+memory need
+ size of timeline = 10T(not only decrease the machine, the complexity of manage decrease a lot)
+  size of feed list = 1.6T
+  size of social graph = 32G
+
+  only tweetIDs are stored in timeline list, social graph, feed lists.
+  tweet contents are appended in merger.
+
+  tweet size = 20b(userID(8) + tweetID(8) + indicattors(4))
+
+  memory needed
+  time line lists = 1T( memory in 1 T is acceptable in a large scale system)
+  feed lists = 160g
+  SOCIAL GRAPH 32g
+
+
+
+ Interviewer : HOW to deal with cache miss?
+ write a service seperately.
+ a u l - notify -- timeline builder -- load/build/append -- feedtable(disk)
+n ms to n s
+what if larger then 3s(torelate limitation);
+1st cond: new user, dont have time line, because they dont have friends.
+2nd cond: previous user, login after one week.
+start this service when they login(input their pwd and username) simutanously.
+
+
+Interview: what is the interface of timeline builder?
+ingerface
+Get(userIDList) return feedList
+Get(userIDList, limit) 
+Get(userIDList, limit, endTime)(within 1 month , not all time)
+Get(userIDList, limit, endTime, beginTime); if they want to continue to more in timelines after previous
+SQL & NoSQL?
+
+
+What is the data??
+tweetID, userID, time, content, state
+(improve)tweeID, userID
+
+电梯
+1t memory 多级实现 1 server 100g memory
+
+How to save TweeListTable
+主从结构，1master 3chunkserver, ？？同机房异机架？？
+
+table tweetID , userID(desc in tweetID menas newest one)
+
+
+Interview : how to lookup on a chunk of time capsule?
+Get({2,12,22})
+Time: O(N)
+
+How to speed up?
+index && bloom filter
+index 
+primary desc in tweet id, Group by userID
+TimeO(q*log(N) + k) q:list size, K how many duplicate
+O(k)
+
+
+How to save space
+(22,3) store in index
+ time capsule only tweetid
+
+
+ How to support search??
+
+ What if the dictionary become bigger and bigger?
+ rebuild, beginning perday, later per week or 2 weeks
+ may miss the hot word/topic
+
+ learning process: when you in startup, everyone helps you. when you enter a big name. remember them.
+
+ PART2 CHAT
+Interview : design a data structure.
+
+user table userId ,,,,,,
+friend table userId, userId
+
+
+ans: 
+userTable
+friendTable
+uidfrom, uidTo, state
+channelTable
+cid, uid, state
+messageTable
+mid, time, uid, cid, content
+
+trick: if channel ID is negtive, means channel
+
+INTERVIEWER:How to choose the storage?
+SQL
+Relationship
+edit
+correct
+TRANSACTION
+combinational
+
+
+NoSQL
+k/v pair
+append(没有寻道时间？？，线性添加)
+tolerent
+PERFORMANCE
+sqeuential record
+
+USERTABLE : mysql
+Friendtable: mysql
+channeltable: mysql
+messagetable: NoSQL
+
+simple action: NoSQL better
+NoSQL do some sql operations. become worse. example: join
+
+interviewer : architecture
+based on limitation: 
+example design a data system on Mars
+low speed(far)
+data size limitation
+lose pakage
+
+3 machine in the image
+one for a broad cast(2)
+one for (router, user manager, channel manager)
+
+Interview: how to support chat group with 1m users?
+
+neccesaries.
+assumption:
+1 message/user 10 min
+message = 30 bytes
+
+message per second = 10^6/10*60 = 1,667
+traffic for one = 1,667*30 = 50kb/s
+traffic for all = 50*10^6 = 50GB/s
+(大B和小b区别) wiki
+
+how to save the traffic
+1.batch message:
+ many message share one head , one foot
+ message size = 18 bytes
+ traffic for one = 1,667*30 = 30KB/s
+ traffic for all = 30*10^6 = 30GB/s
+
+how can we ensure the realtime? acceptable if it has some delay.
+ when qps > 1k, traffic is a problem
+
+ 2.compress content
+18 --> 9
+traffic for all = 15GB/s
+
+How to save the message when a user is offline?(chat history, search on history)
+combination of architecture.
+similar to feed system.
+
+Interview: when compress and batch? between broadcast and router , data combination layer()
+we can utilize broadcast , since it's easier.
+
+How to support timeline notification in Twitter?
+
+ombination of architecture.
+feed system  and chat system.
+
+Interview: how to update online status of friends?
+vacillation of status?
+
+signal is better.
+may casue internet storm, huge number of users send the online and offline message 
+
+Set a delay: wait 5s, even though give up real time notification which is acceptable for users.	 
+
+pull && push
+data-pull/push
+link-pull: a user pulls the notification from the user every k seconds.
+link-push: the server pushes the notification to the user with WebSocket as soon as it appears.
+
+
+web-socket 有了之后才支持，以前不支持，wiki it
+
+Interview: how to chose between push and pull
+link-push
+fast
+waste for users seldom check
+need more connections
+link-pull
+delayed
+waste for users with less news
+need more bandwidth
+
+sol: if active users less than 10k dont consider that much.
+
+
+Interview: how to combine push and pull
+1push numbers of notifications
+2pull details of notifications
+
+broadcaster: receive and sned the message from users
+
+
+
+
+
+
 
 
 
