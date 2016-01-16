@@ -1,0 +1,224 @@
+what is system design?
+process of define data, algorithm, module, architecture for a system to satisfy some specific requirements.
+process of defining data, interface, module, component, architecture for a system to satisfy specific requirements.
+
+What is a good design?
+healthiness
+every part execute well, comunicate well
+simplicity: no more no less.
+
+http://www.aosabook.org/en/distsys.html
+
+cdn: content delivery network. 
+a golobally distributed network of server to server the content(like, image, video);
+serve content to end-users with high availability and high performance.
+
+Service Oriented Architecture: each service has its own functional context, different services 
+communicate with abstract interface.
+
+problem of first solution
+1. upload and download compete resource each other.
+download:upload is usually 3:1
+2.read files from cache, write to disk
+database write is alwasy slower than reads.
+
+another problem
+1.server has a upper limit of simultaneous connection(500 default, can much higher)
+in high trffic, write consumes all.
+
+read can be ashnchrnous, or compression or chunk transfer(batch).
+so server can handle many more qps than the maximum.(serveral k, if maximum connection is 500)
+write, hold the connection during uploading. upload 1-2mb/s, so can only handle 500.
+
+
+solution: split out reads and writes of images
+advantage: 
+1.scale each of them independently.
+2.clarify what is going on at each point easier.
+3.easier to troubleshooot
+
+how to speed up: 
+1.queue up the requests.
+2.cache the popular images.
+
+flickr solve the read/write problem:
+distribute users across different shards.
+users increase, add more shards.
+
+Problem: one of the services brings down(for example, one one can write files)
+whereas flicker will only affect those specific users.
+
+shard problem:
+update, first example, only need update one write service.
+flicker needs to update each shards metadata for searching.
+
+Redundancy: in order to solve failure(losing data, or a service is down);
+
+backup database or spare service.
+once one of them are down, the system can failover to the healthy copy.
+
+problem: large data sets. so that single server cannot handle that.
+solution: scale vertically/horizonally
+vertically means add more resource to an individual server. faster cpu, more memory, etc
+
+horizonally:add more nodes. store part of data in other data set. splitting opeartions to other nodes.
+means partition or shards.
+shared-nonthing: 
+
+
+problem of doing that: 
+1. data locality. have data spread through multiple servers, cost more time for fetching data across network.
+2.data consistency.
+
+LAMP: a typical model for building web service.
+Linux
+Apache HTTP server
+MySQL relational database management system
+Php language.
+
+Problem of LAMP as they grow:
+scalability of data layer.
+fast access of data.
+usually app layer is minimized and is share-nothing system(loose- coupled);
+
+
+8 bits = 1 byte
+1000 byte = 1kB
+
+problem: assume you have TB level data, and user want to access small portion of data
+it's very costly to load TB data into memory, so it directly tranlates to disk LEVEL. which 
+is soso much slower than memory.
+memory speed: chuck norris
+disk access: line at DMV
+1 ns = 10^-9 s
+
+read 1m sequencially in main memory: 250 us
+read 1m sequencially in disk 20ms 80times memory
+even faster when you random access the memory. 100k times of disk
+ http://queue.acm.org/detail.cfm?id=1563874
+
+4 solutions:
+cache
+proxies,
+indexes,
+load banlancers.
+
+cache:
+like short term memory
+contain the recently acessed data.
+
+where to place:
+directly on a request layer node: enable the local storage of data.
+request will check if the data is in the local cache, if yes, return the data without querying 
+the data center.
+
+What happen to many node?
+Have each host its own cache.
+
+technology diff:
+memory : DRAM, dynamic random access memory
+cache: SRAM, static randon acess memory
+problem: 
+if you load balancer distributed randomly the request, the same request will go to another node.
+It will miss the cache.
+
+solution:
+1. global cache
+2.distributed cache
+
+global cache: 
+use single cache for different nodes.
+problem: easy to overwhelm/full.
+
+two forms:
+(use more)1,request to cache, if no. cache to datacenter, and add data into cache from datacenter
+why: datacenter prevent large numbers of request from clients.
+2.request cache, if no, request to datacenter. and datacenter to cache to add data.
+sometimes:
+
+distributed cache:
+use a hashing to find the cache.
+
+problem: missing node, add/remove node, get complicated quickly.
+
+memcached(http://memcached.org/) 
+key-value store, lookup O(1);
+
+
+Proxy
+a proxy server is an intermediate piece of hardware that receives request from clients and modified 
+them and relay them to origin servers.
+used to filter requests, log requests, transform requests.
+
+1proxy collapse serveral requests for same data into one request.
+2collopase serveral request for close data into on request.
+
+
+you can use proxies and caches together,
+generally put cache in front of proxy.
+reason: cache is faster, doesn't mid multiple request for same data.
+if cache is behind proxy, get some latency.
+
+name some proxy:  Squid and Varnish
+
+
+indexes:
+a table map data to specific location
+
+inverted index:
+
+
+load balancers:
+distribute load across a set of node
+advantage:
+can handle a lot of simultanously connection and route these connection to one of requests node
+2.easy to scale, just add nodes
+
+algorithm to pick node:
+round robin
+based on some criteria(cpu or memory utilization)
+
+name some load balancer:
+HAProxy
+
+problem: 
+user-session-specific data.
+store data in a session, when visit next time, if go to another node, that session may lose.
+solution: cookies
+
+browser cache
+
+Queue:
+advan: can handle task asynchrounously.
+users know the taks are acceptable properly. the server will send the acknowledge later about 
+task result. 
+
+
+name some software implementing queue
+redis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
