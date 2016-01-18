@@ -199,11 +199,81 @@ redis.
 
 
 
+ gfs save:
+ disk: metadata + data
+ unit: block 1024bytes
 
 
+ p:file become bigge, metedata become bigger
+ s:bigger unit chunck 64mb;
+
+ p:extra large file
+ master to store metadata.(index)
+ chunkserver to store data.
+
+ problem: chunkserver need to notify master the change, consume all the bandwidth
+ sol:index more general, for which chunkserver instead of which place in that chunkserver.
+ chunkserver has his own index
+
+ problem: how to check one chunk is down
+ sol: one chunk has a list of blocks.
+ 1 block = 64kb;
+ 1 block has a check sum(32bit)
+ 1T/64kb*32 = 64MB;
+ it will compare its checksum when it reads a block.
+
+ problem: what if one chunk is down
+ sol:copy 2 more.
+
+ how to choose which 2:
+ 1.disk utilization
+ 2.limit number of recent 
+ 3.across rack 2 + 1; two data center, two racks.
+
+ problem:how to recover?
+ ask master, where the other,
+ master frop broken chunkserver in index.
+ get the info back.
+ find the closest one,
+ get the copy back. 
+ notify master to change index!!
+
+ problem: chunkserver is down
+ chunkserver sent heartbest to master
+ 1min/time, wait like 5 min(since maybe network problem);
+ if heartbeat timeout, know the chunkserver is broken.
+
+ problem: how to recover.
+ repair proceduce
+ working list
+ chunk99, cs1
+ chunk03, cs3,cs5
+
+ the less, the high priority
+
+ problem: how to aoid hot spot;
+ make more copies of these hot resources.
 
 
+ gfs read:
+ 1.client to master
+ request: filename, chunk index
+ 2.master to client
+ find table in a file namespace
+ chunk handle, chunk location
+ find index table 
+ 3. client to chunkserver(closest one)
+ chunk handle, byte range
+ 4.chunkserver to data
+ get data.
 
+problem: is master can handle
+ans: master is easy enought, can handle 10^9
+
+
+fgs:write file
+7steps in total:
+step 3: why cache first: 1.fast 2 avoid inconsistency
 
 
 
