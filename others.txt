@@ -1,0 +1,135 @@
+In-memory database: a database that primarily relies on main memory for computer data storage.
+Much faster than disk storage:
+
+email summarization(60%)
+
+TF-IDF:
+term frequency-inverse document frequency.
+
+GATE: general architecutre for text engineering.
+a tool for natural language processing, include information extraction
+include a information extraction system call ANNIE(a nearly-new information extraction system)
+
+There many tasks in NLP, we're doing automatic summarization.
+
+document summarization, image collection summarization, video summarization.
+
+try to automatically create a representative summary of the entire document. by finding some most 
+informative words.
+
+information overload: a person can hardly understand or make decision if there is too much information.
+
+
+two approach:
+extraction and abstraction
+extractive method: extract some most informative words, phrases or sentences in the original text to form a summary.
+abstraction method: try to build a internal semantic representation and use natural language generation techniques to 
+create a summary that is closer to what a human being may generate. so it may include some words that is not is the original text. 
+
+current the extrative method is the primary method we use because of the complexity constraints of abstrative method.
+
+extraction-based summary:
+1.keyphrase extraction. select some key words or phrases to "tag" the document.
+2.sentence extraction. select a whole sentence(without modifying them) to create a short summary of the document.
+
+supervised: labeled
+unsupervised: unlabeled
+
+ROUGE: recall-oriented understudy for gisting evaluation: a set of metrics and a software used to evaluate automatic summarization.
+
+the metrics compare an automatically produced summary against human-produced summary.
+
+
+supervised approach:
+can evaluate using precision can recall.
+
+unsupervised approach: 
+disadvan: 1.need a large amount of training set.
+2.training on specific domain tends to specific process, so the result classfier is not portable.
+
+
+tf:term frequency
+t occurs in this document: f(t,d)
+normalization: 1 + logf(t,d): compare different threads.
+
+idf: inverse document frequency.
+measures how much information the word provides.
+idf =log(N/n(t));
+
+tf-idf: a product of two statistics.
+
+read from file.
+split into string[], 
+str.split("[^a-zA-Z]+")
+use regex to check they are words
+
+create a global idf: create an inverted index, 
+Map<string, Set<String>> map
+each document, if hashmap contains, map.get(term).add(document)
+else put(term, new Set().add(document));
+
+for each document,
+tf table:
+map<string, int>
+map.put(term, map.get(term) + 1);
+
+for map.keyset()
+calculate tf-idf
+
+put them in to a max heap.
+get first highest 3;
+
+place need to improve:
+algorithm, use too much space.
+
+char room demo(40%)
+
+Cookie: a small piece of data send from web server store in client browser/disk.
+for recording information of client, convinient for server to keep track.
+example: 1.login in next time. 2.what product you're looking for or added.
+
+drawback of cookie: 
+1.add in the header, make more bandwidth
+2.only 4kb, cannot store complicated information.
+3.security issue, send in plain text.
+
+Connection to a website:
+1.get ip from DNS
+	1.check if broswer cache has dns
+	2.check host file in OS
+	3.go to DNS to get ip.
+2.make TCP connection
+	3 way handshake
+	client sent syn to server
+	server return syn + ack
+	client send ack.
+
+
+3.request resource by GET/POST
+  firstime, make cookie for future use.
+  second or more times, use cookie to get resource from cache.
+4. render page
+	if return http statucode 200 OK.
+	reder page.
+	redirect::
+
+socket: is an endpoint of an inter-process communiction across computer network.
+
+make a socket connection,
+clients and server has different threads,
+server use a blocking queue to put all messages from clinet in, and pull them out in the output.
+
+
+http://www.cnblogs.com/taoweiji/archive/2012/12/14/2818801.html
+swing:
+
+
+
+
+
+
+
+
+
+
+
