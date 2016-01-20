@@ -276,6 +276,121 @@ fgs:write file
 step 3: why cache first: 1.fast 2 avoid inconsistency
 
 
+static page:
+can not update automatically. basically, .html page.
+dynamic page:
+can update content through backend, post news, product info.
+
+
+http://www.cnblogs.com/sharpxiajun/p/4237704.html
+web architecture:
+
+hardware part:
+
+bandwidth: 
+active daily user: 1m
+average qps = 1m/864000 = 12
+average page = 100kb;
+average bandwidth = 12*100kb*8 = 9600kbit = 9.6Mbps
+peak = average*5 = 45Mbps;
+
+my prob: how request find which server need to serve?
+server:
+image, page, data,log
+data is the most important, usually is the bottleneck.
+usually use master-slave to seperate the read and write.
+
+horizonal:diff table in diff servers, prob: join
+vertical:diff id in diff servers, prob: count, sum();
+
+memcache: a key/value hashmap, improve the read performance.
+
+software part:
+
+representation/logic/??/persistance
+
+usually deploy wep app in two servers. 
+prob: need to synchronized the user's state.
+sol: session
+servers need to send the session between each other.
+
+prob: server increase, the ability to handle qps doesn't increase linear.
+sol:memcache/ for session in a seperate server. why:map sessionid to specific server
+prob: when that server is down, cannot serve that client.
+easier way, store the session in cookie.
+
+
+session vs cookie
+session: server side file
+cookie: client side file
+
+HTTP:hypert text transfer protocol
+HTTPS: hyper text transfer protocol over SSL; use to authenticate and payment transaction
+
+different website has different feature:
+paypal, write > read
+facebook, read > write;
+amazon: read > write; 4:1??
+
+website is down when high qps
+90% is because database, bottle neck in store.
+for read >> write, sol: seperate write and read.
+
+master for write.
+slave for read.
+master usually is ok, do not need so many writes.
+batch operations for synchronization.
+if cannot handle read. sol: cache some not frequently changed data.
+prob: real time update.
+reason: when request comes, return cache first(usuallly the old data);
+
+
+facebook: batch operations.
+
+above that, solve database down problem.
+
+而读写分离方案主要是应用于网站读写比例严重失衡的网站
+
+qps get higher:
+export data from database to file, create index.
+search usually use LIKE, like is inefficient in database o(N);
+LIKE  IS FASTER IN search?? why
+
+data become more and more until one server cannot handle all data.
+vertical sperate: 20% big table. 
+seperate the bigest table, like comodity_table, transaction_table
+
+data more and more untial one server cannot handle one table.
+horizonal seperate: seperate one table into different servers.
+
+system design principle: simple, no more, no less.
+
+verizonal seperate: 
+prob:how to set primary key
+sol
+1.set step size.
+for example,if seperate into 2 parts.
+1,3,5,7,9
+2,4,6,8,10 won't conflict
+
+2.estimate size and set start point.
+
+if not use auto increament, use other customize rules.
+hash and get the mod.
+
+
+12306网站
+http://coolshell.cn/articles/6470.html
+秒杀新的解决方案
+1.only handle first n requests.
+2.log first n request.
+when finish sec-kill,
+batch all the request to modify the database.
+alibaba sol: input validata code, cdn will filter all the other users.
+so only n request can go to database.
+usually asynchronized the write operation, put them into queue.
+
+
 
 
 
