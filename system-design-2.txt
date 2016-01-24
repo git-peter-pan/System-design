@@ -282,6 +282,96 @@ dynamic page:
 can update content through backend, post news, product info.
 
 
+
+
+Big Table
+
+prob:lookup and range query
+
+how to save a large table:
+split
+meta table(tablet0, lastKeyOfTablet0/firstkey??, address0), tablet0, tablelet1, tablelet2.
+
+prob:extra large table?
+more level
+table -- > tablet --> SSTable
+
+prob: how to write into a table?
+tablet in memory,
+SSTable in disk.
+
+doesn't write data into sstable directly
+need a memTable.
+A tablet = memTable + a list of SSTable.
+
+prob: what if memtable is too large.
+won't,  limitation 64MB
+when full, create a new SSTable, dump the memtable into the SSTable.
+
+prob:how to avoid system failure?
+a: tabletLog
+tablet = memtable + a list of sstable + tablelog
+in a sstable, sorted, between sstable not ordered.
+
+Read: 
+a read need to ask all sstables and memtable.
+SSTABLE need to use disk, very slow. 
+
+
+prob:speed up
+a: index
+build index of sstable,
+put index in table.(memory, fast);
+
+once writed sstable, dont modify.
+advantage: index wont change.
+
+sstable = <k,v> + index
+
+prob: faster? index O(logN);
+a: bloom filter O(1), like hash,
+
+how to save a table into GFS:
+GFS: SAVE log of table and sstable in the chunkserver. 3 copies of course.
+
+
+prob: What is the logic view of table?
+3d table, time_line
+
+prob relation between gfs and bigtable:
+bigtable is like mysql, database,
+gfs is like linux, OS.
+
+prob: transform logic view into physical storage?
+row,column,time as the key
+
+
+MapReduce
+appearances of words count;
+inverted index
+anagrams
+
+prob: what is map and reduce?
+
+build inverted index:
+worker can be reused.
+
+
+system architecture
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 http://www.cnblogs.com/sharpxiajun/p/4237704.html
 web architecture:
 
@@ -343,6 +433,9 @@ batch operations for synchronization.
 if cannot handle read. sol: cache some not frequently changed data.
 prob: real time update.
 reason: when request comes, return cache first(usuallly the old data);
+
+
+
 
 
 facebook: batch operations.

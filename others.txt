@@ -124,6 +124,33 @@ http://www.cnblogs.com/taoweiji/archive/2012/12/14/2818801.html
 swing:
 
 
+OOD principle S.O.L.I.D
+
+UML: unified modeling language.
+is a pictorial language used to make software blue prints.
+
+a picture is worth a thousand words.
+
+OO design:
+OO analysis --> OO design --> OO implement.
+
+设计得好的类一般只有一种职责
+
+http://blog.csdn.net/lovelion/article/details/7843308
+UML:
+class name: name
+class attribute:
+visible: + public, - private, # protected
+name: type[=default];
+visibility name:type[=default]
+class operations:
+visible name(parameter): return type
+
+innver class
+
+realtion between class;
+extends: line + hollow triangle
+implements: dotted line + hollow triangle
 
 
 
